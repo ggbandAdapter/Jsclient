@@ -1,0 +1,497 @@
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <script src="./TronWeb.js"></script>
+    <script src="./tron_contract.js"></script>
+</head>
+
+<body>
+    <script>
+        function connectWebViewJavascriptBridge(callback) {
+            if (window.WebViewJavascriptBridge) {
+                callback(WebViewJavascriptBridge)
+            } else {
+                document.addEventListener(
+                    'WebViewJavascriptBridgeReady',
+                    function () {
+                        callback(WebViewJavascriptBridge)
+                    },
+                    false
+                );
+            }
+
+        };
+
+        var tronWeb = new TronWeb({
+            fullHost: 'https://api.trongrid.io'
+        });
+
+        connectWebViewJavascriptBridge(function (bridge) {
+            bridge.init(function (message, responseCallback) {
+                console.log('JS got a message', message);
+                var data = {
+                    'Javascript Responds': '测试中文!'
+                };
+                console.log('JS responding with', data);
+                responseCallback(data);
+            });
+
+
+
+            // 获取账号信息
+            bridge.registerHandler("getAccount", function (data, responseCallback) {
+                tronWeb.trx.getAccount(data).then(data => {
+                    responseCallback({
+                        "status": true,
+                        "data": data
+                    });
+                }).catch(error => {
+                    responseCallback({
+                        "status": false,
+                        "message": JSON.stringify(error)
+                    });
+                });
+            });
+
+            // 获取账号余额
+            bridge.registerHandler("getBalance", function (data, responseCallback) {
+                tronWeb.trx.getBalance(data).then(respone => {
+                    responseCallback({
+                        "status": true,
+                        "data": respone
+                    });
+                }).catch(error => {
+                    responseCallback({
+                        "status": false,
+                        "message": JSON.stringify(error)
+                    });
+                });
+            });
+
+            // TRX转账交易
+            bridge.registerHandler("sendTRX", function (data, responseCallback) {
+
+                console.log("********************** sendTRX *********************************");
+                const app = async () => {
+                    let action = data['action'];
+                    let privateKey = data['privateKey'];
+                    let trx = await tronWeb.transactionBuilder.sendTrx(action['to'],
+                        action['amount'], action['from'])
+                    let sign = await tronWeb.trx.sign(trx, privateKey)
+                    let transaction = await tronWeb.trx.sendRawTransaction(
+                        sign)
+                    return transaction
+                };
+                app().then((result) => {
+                    console.log("************* sendTRX  success *************");
+                    responseCallback({
+                        "status": true,
+                        "data": result
+                    });
+                }).catch((error) => {
+                    console.log(`************* sendTRX  fail ${error}*************`);
+                    responseCallback({
+                        "status": false,
+                        "message": JSON.stringify(error)
+                    });
+                });
+
+            });
+
+            bridge.registerHandler('isAddress', function (data, responseCallback) {
+                let rel = tronWeb.isAddress(data);
+                responseCallback({
+                    "status": true,
+                    "respone": rel
+                });
+            });
+
+            // Token转账交易
+            bridge.registerHandler('sendToken', function (data, responseCallback) {
+                let action = data['action'];
+                let privateKey = data['privateKey'];
+                tronWeb.transactionBuilder.sendToken(action['to'], action['amount'], action['tokenID'],
+                    action['from']).then(respone => {
+                    tronWeb.trx.sign(respone, privateKey).then(respone1 => {
+                        tronWeb.trx.sendRawTransaction(respone1).then(respone2 => {
+                            responseCallback({
+                                "status": true,
+                                "respone": respone2
+                            });
+                        }).catch(error2 => {
+                            responseCallback({
+                                "status": false,
+                                "respone": error2
+                            });
+                        });
+                    }).catch(error1 => {
+                        responseCallback({
+                            "status": false,
+                            "respone": error1
+                        });
+                    });
+                }).catch(error => {
+                    responseCallback({
+                        "status": false,
+                        "respone": error
+                    });
+                });
+            });
+
+            // 购买Token
+            bridge.registerHandler('purchaseToken', function (data, responseCallback) {
+                let action = data['action'];
+                let privateKey = data['privateKey'];
+                tronWeb.transactionBuilder.purchaseToken(action['issuerAddress'], action['tokenID'],
+                    action['amount'], action['buyer']).then(respone => {
+                    tronWeb.trx.sign(respone, privateKey).then(respone1 => {
+                        tronWeb.trx.sendRawTransaction(respone1).then(respone2 => {
+                            responseCallback({
+                                "status": true,
+                                "respone": respone2
+                            });
+                        }).catch(error2 => {
+                            responseCallback({
+                                "status": false,
+                                "respone": error2
+                            });
+                        });
+                    }).catch(error1 => {
+                        responseCallback({
+                            "status": false,
+                            "respone": error1
+                        });
+                    });
+                }).catch(error => {
+                    responseCallback({
+                        "status": false,
+                        "respone": error
+                    });
+                });
+            });
+
+            // 冻结 TRX 的交易
+            bridge.registerHandler('freezeBalance', function (data, responseCallback) {
+                let action = data['action'];
+                let privateKey = data['privateKey'];
+                tronWeb.transactionBuilder.freezeBalance(tronWeb.toSun(action['amount']), action[
+                    'duration'], action['resource'], action['owner']).then(respone => {
+                    tronWeb.trx.sign(respone, privateKey).then(respone1 => {
+                        tronWeb.trx.sendRawTransaction(respone1).then(respone2 => {
+                            responseCallback({
+                                "status": true,
+                                "respone": respone2
+                            });
+                        }).catch(error2 => {
+                            responseCallback({
+                                "status": false,
+                                "respone": error2
+                            });
+                        });
+                    }).catch(error1 => {
+                        responseCallback({
+                            "status": false,
+                            "respone": error1
+                        });
+                    });
+                }).catch(error => {
+                    responseCallback({
+                        "status": false,
+                        "respone": error
+                    });
+                });
+            });
+
+            // 为他人冻结
+            bridge.registerHandler('freezeBalanceForOther', function (data, responseCallback) {
+                let action = data['action'];
+                let privateKey = data['privateKey'];
+                tronWeb.transactionBuilder.freezeBalance(tronWeb.toSun(action['amount']), action[
+                    'duration'], action['resource'], action['owner'], action['to']).then(
+                    respone => {
+                        tronWeb.trx.sign(respone, privateKey).then(respone1 => {
+                            tronWeb.trx.sendRawTransaction(respone1).then(respone2 => {
+                                responseCallback({
+                                    "status": true,
+                                    "respone": respone2
+                                });
+                            }).catch(error2 => {
+                                responseCallback({
+                                    "status": false,
+                                    "respone": error2
+                                });
+                            });
+                        }).catch(error1 => {
+                            responseCallback({
+                                "status": false,
+                                "respone": error1
+                            });
+                        });
+                    }).catch(error => {
+                    responseCallback({
+                        "status": false,
+                        "respone": error
+                    });
+                });
+            });
+
+            // 解冻 TRX 的交易
+            bridge.registerHandler('unfreezeBalance', function (data, responseCallback) {
+                let action = data['action'];
+                let privateKey = data['privateKey'];
+                tronWeb.transactionBuilder.unfreezeBalance(action['resource'], action['address']).then(
+                    respone => {
+                        tronWeb.trx.sign(respone, privateKey).then(respone1 => {
+                            tronWeb.trx.sendRawTransaction(respone1).then(respone2 => {
+                                responseCallback({
+                                    "status": true,
+                                    "respone": respone2
+                                });
+                            }).catch(error2 => {
+                                responseCallback({
+                                    "status": false,
+                                    "respone": error2
+                                });
+                            });
+                        }).catch(error1 => {
+                            responseCallback({
+                                "status": false,
+                                "respone": error1
+                            });
+                        });
+
+                    }).catch(error => {
+                    responseCallback({
+                        "status": false,
+                        "respone": error
+                    });
+                });
+
+            });
+
+            // 解冻代理给他人的 TRX
+            bridge.registerHandler('unfreezeBalanceForOther', function (data, responseCallback) {
+                let action = data['action'];
+                let privateKey = data['privateKey'];
+                tronWeb.transactionBuilder.unfreezeBalance(action['resource'], action['address'],
+                    action['to']).then(respone => {
+                    tronWeb.trx.sign(respone, privateKey).then(respone1 => {
+                        tronWeb.trx.sendRawTransaction(respone1).then(respone2 => {
+                            responseCallback({
+                                "status": true,
+                                "respone": respone2
+                            });
+                        }).catch(error2 => {
+                            responseCallback({
+                                "status": false,
+                                "respone": error2
+                            });
+                        });
+                    }).catch(error1 => {
+                        responseCallback({
+                            "status": false,
+                            "respone": error1
+                        });
+                    });
+
+                }).catch(error => {
+                    responseCallback({
+                        "status": false,
+                        "respone": error
+                    });
+                });
+
+            });
+
+            // 投票
+            bridge.registerHandler('vote', function (data, responseCallback) {
+                let action = data['action'];
+                let privateKey = data['privateKey'];
+                tronWeb.transactionBuilder.vote(action['vote'], action['address']).then(respone => {
+                    tronWeb.trx.sign(respone, privateKey).then(respone1 => {
+                        tronWeb.trx.sendRawTransaction(respone1).then(respone2 => {
+                            responseCallback({
+                                "status": true,
+                                "respone": respone2
+                            });
+                        }).catch(error2 => {
+                            responseCallback({
+                                "status": false,
+                                "respone": error2
+                            });
+                        });
+                    }).catch(error1 => {
+                        responseCallback({
+                            "status": false,
+                            "respone": error1
+                        });
+                    });
+
+                }).catch(error => {
+                    responseCallback({
+                        "status": false,
+                        "respone": error
+                    });
+                });
+
+            });
+
+            // 超级代表
+            bridge.registerHandler('listSuperRepresentatives', function (data, responseCallback) {
+                tronWeb.trx.listSuperRepresentatives().then(function (respone) {
+                    responseCallback({
+                        "status": true,
+                        "respone": respone
+                    });
+                }).catch(error => {
+                    responseCallback({
+                        "status": false,
+                        "respone": error
+                    });
+                });
+            });
+
+            // 通过ID获取Token详情
+            bridge.registerHandler('getTokenFromID', function (data, responseCallback) {
+                tronWeb.trx.getTokenFromID(data).then(function (respone) {
+                    responseCallback({
+                        "status": true,
+                        "respone": respone
+                    });
+                }).catch(error => {
+                    responseCallback({
+                        "status": false,
+                        "respone": error
+                    });
+                });
+            });
+
+            // 通过地址获取Token详情
+            bridge.registerHandler('getTokensIssuedByAddress', function (data, responseCallback) {
+                tronWeb.trx.getTokensIssuedByAddress(data).then(function (respone) {
+                    responseCallback({
+                        "status": true,
+                        "respone": respone
+                    });
+                }).catch(error => {
+                    responseCallback({
+                        "status": false,
+                        "respone": error
+                    });
+                });
+            });
+
+            // 获取账号资源
+            bridge.registerHandler('getAccountResources', function (data, responseCallback) {
+                tronWeb.trx.getAccountResources(data).then(function (respone) {
+                    responseCallback({
+                        "status": true,
+                        "respone": respone
+                    });
+                }).catch(error => {
+                    responseCallback({
+                        "status": false,
+                        "respone": error
+                    });
+                });
+            });
+
+            // 获取账号带宽
+            bridge.registerHandler('getBandwidth', function (data, responseCallback) {
+                tronWeb.trx.getBandwidth(data).then(function (respone) {
+                    responseCallback({
+                        "status": true,
+                        "respone": respone
+                    });
+                }).catch(error => {
+                    responseCallback({
+                        "status": false,
+                        "respone": error
+                    });
+                });
+            });
+
+            // 获取交易详情
+            bridge.registerHandler('getTransaction', function (data, responseCallback) {
+                tronWeb.trx.getTransaction(data).then(function (respone) {
+                    responseCallback({
+                        "status": true,
+                        "respone": respone
+                    });
+                }).catch(error => {
+                    responseCallback({
+                        "status": false,
+                        "respone": error
+                    });
+                });
+            });
+
+            // 签名
+            bridge.registerHandler('sign', function (data, responseCallback) {
+                let action = data['action'];
+                let privateKey = data['privateKey'];
+
+                tronWeb.trx.sign(action, privateKey).then(response => {
+                    responseCallback({
+                        "status": true,
+                        "respone": response
+                    });
+                }).catch(error => {
+                    responseCallback({
+                        "status": false,
+                        "respone": error
+                    });
+                });
+            });
+
+            // 签名并广播
+            bridge.registerHandler('signAndBroadcast', function (data, responseCallback) {
+                let action = data['action'];
+                let privateKey = data['privateKey'];
+                tronWeb.trx.sign(action, privateKey).then(response => {
+                    tronWeb.trx.sendRawTransaction(response).then(respone1 => {
+                        responseCallback({
+                            "status": true,
+                            "respone": respone1
+                        });
+                    }).catch(error2 => {
+                        responseCallback({
+                            "status": false,
+                            "respone": error2
+                        });
+                    });
+                }).cache(error => {
+                    responseCallback({
+                        "status": false,
+                        "respone": error
+                    });
+                });
+            });
+
+            bridge.registerHandler('remixAbiCode', function (data, responseCallback) {
+                let abi = data['abi'];
+                let byteCode = data['byteCode'];
+                try {
+                    let params = TronContract.decodeContract(abi, byteCode);
+                    responseCallback({
+                        "status": true,
+                        "respone": params
+                    });
+                } catch (error) {
+                    responseCallback({
+                        "status": false,
+                        "respone": error
+                    });
+                }
+
+            });
+
+
+
+        });
+    </script>
+</body>
+
+
+</html>
