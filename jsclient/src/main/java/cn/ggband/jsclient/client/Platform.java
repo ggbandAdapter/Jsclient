@@ -13,7 +13,6 @@ import java.lang.reflect.Type;
 
 import cn.ggband.jsclient.BridgeWebView;
 import cn.ggband.jsclient.CallBackFunction;
-import cn.ggband.jsclient.Utils;
 
 public class Platform {
 

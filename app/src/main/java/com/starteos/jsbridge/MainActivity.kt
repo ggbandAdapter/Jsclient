@@ -80,7 +80,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         //注册 submitFromWeb()给js调用
-        client.second.getWebView().registerHandler(
+        client.second.getWebView()?.registerHandler(
             "submitFromWeb"
         ) { data, function ->
             toast("handler = submitFromWeb, data from web = $data")

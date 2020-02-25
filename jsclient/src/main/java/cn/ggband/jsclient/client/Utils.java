@@ -1,4 +1,4 @@
-package cn.ggband.jsclient;
+package cn.ggband.jsclient.client;
 
 import com.google.gson.Gson;
 

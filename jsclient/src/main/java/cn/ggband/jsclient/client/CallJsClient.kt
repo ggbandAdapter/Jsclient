@@ -1,9 +1,8 @@
 package com.starteos.jsbridge.jsbridge.client
 
 import android.content.Context
-import android.webkit.WebView
 import cn.ggband.jsclient.BridgeWebView
-import cn.ggband.jsclient.Utils
+import cn.ggband.jsclient.client.Utils
 import cn.ggband.jsclient.client.Platform
 import java.lang.reflect.Proxy
 
@@ -18,19 +17,20 @@ import java.lang.reflect.Proxy
 class CallJsClient private constructor(builder: Builder) {
 
 
-    private var mWebView: BridgeWebView = BridgeWebView(builder.getContext())
+    private var mWebView: BridgeWebView?
 
     private var mContext: Context? = null
-    /**
-     * html的url
-     */
-    private var url: String? = null
 
 
     init {
         mContext = builder.getContext()
-        url = builder.getUrl()
-        mWebView.loadUrl(url)
+        mWebView = builder.getWebView()
+        if (mWebView == null) {
+            mWebView = BridgeWebView(builder.getContext())
+        }
+        builder.getUrl()?.let {
+            mWebView?.loadUrl(it)
+        }
     }
 
 
@@ -46,7 +46,7 @@ class CallJsClient private constructor(builder: Builder) {
     }
 
 
-    fun getWebView(): BridgeWebView {
+    fun getWebView(): BridgeWebView? {
         return mWebView
     }
 
@@ -57,19 +57,28 @@ class CallJsClient private constructor(builder: Builder) {
 
         private var url: String? = null
 
+        private var webView: BridgeWebView? = null
 
-        fun getUrl() = url
 
         fun getContext() = context
 
+        fun getUrl() = url
+
+        fun getWebView() = webView
+
+
+        fun context(context: Context): Builder {
+            this.context = context
+            return this
+        }
 
         fun url(url: String): Builder {
             this.url = url
             return this
         }
 
-        fun context(context: Context): Builder {
-            this.context = context
+        fun webView(webView: BridgeWebView): Builder {
+            this.webView = webView
             return this
         }
 
