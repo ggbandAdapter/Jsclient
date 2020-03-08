@@ -16,11 +16,8 @@ import java.lang.reflect.Proxy
 @Suppress("UNCHECKED_CAST")
 class CallJsClient private constructor(builder: Builder) {
 
-
     private var mWebView: BridgeWebView?
-
     private var mContext: Context? = null
-
 
     init {
         mContext = builder.getContext()
@@ -33,7 +30,6 @@ class CallJsClient private constructor(builder: Builder) {
         }
     }
 
-
     fun <T> create(service: Class<T>): T {
         Utils.validateServiceInterface(service)
         return Proxy.newProxyInstance(
@@ -45,27 +41,21 @@ class CallJsClient private constructor(builder: Builder) {
         } as T
     }
 
-
     fun getWebView(): BridgeWebView? {
         return mWebView
     }
 
-
     class Builder {
 
         private var context: Context? = null
-
         private var url: String? = null
-
         private var webView: BridgeWebView? = null
-
 
         fun getContext() = context
 
         fun getUrl() = url
 
         fun getWebView() = webView
-
 
         fun context(context: Context): Builder {
             this.context = context
@@ -81,7 +71,6 @@ class CallJsClient private constructor(builder: Builder) {
             this.webView = webView
             return this
         }
-
 
         fun build(): CallJsClient {
             return CallJsClient(this)

@@ -19,7 +19,6 @@ public class Platform {
 
     private BridgeWebView mWebView;
 
-
     private Platform(BridgeWebView webView) {
         this.mWebView = webView;
     }
@@ -27,7 +26,6 @@ public class Platform {
     public static Platform get(BridgeWebView webView) {
         return new Platform(webView);
     }
-
 
     @Nullable
     public Object invokeDefaultMethod(Method method, Class<?> declaringClass, Object object,
@@ -73,7 +71,6 @@ public class Platform {
         private String handlerName;
         //js方法参数
         private String data;
-
         //json 解析 type
         private Type type;
 
