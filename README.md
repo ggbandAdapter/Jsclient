@@ -7,7 +7,7 @@ Android and JS interactive tools.
 
 --
 
-## How to
+## How to introduce dependency
 
 To get a Git project into your build:
 
@@ -30,3 +30,90 @@ Step 2. Add the dependency
 
 
 --
+
+## How to use
+
+First, create a client that interacts with JS.
+
+   val tronClient = CallJsClient.Builder().context(this).url("file:///android_asset/tron/TronWeb.html").build()
+   val trxApi = tronClient.create(TrxApi::class.java)
+   
+# --- Android calls JS method.
+
+Step 1. Writing java interface calling JS method
+   
+  internal interface TrxApi {
+
+    /**
+     * Access to account information
+     */
+    fun getAccount(address: String): Call<Result<TronAccount>>
+
+    /**
+     * Get account balance
+     */
+
+    fun getBalance(address: String): Call<Result<String>>
+
+    /**
+     * Transfer
+     */
+    fun sendTRX(@PartMap("action") action: Map<String, String>, @Field("privateKey") privateKey: String): Call<Result<Any>>
+  }
+
+Step 2. Write JS function for Android to call.
+
+    bridge.registerHandler("getAccount", function (data, responseCallback) {
+                tronWeb.trx.getAccount(data).then(data => {
+                    responseCallback({
+                        "status": true,
+                        "data": data
+                    });
+                }).catch(error => {
+                    responseCallback({
+                        "status": false,
+                        "message": JSON.stringify(error)
+                    });
+                });
+            });
+
+     bridge.registerHandler("getBalance", function (data, responseCallback) {
+                tronWeb.trx.getBalance(data).then(respone => {
+                    responseCallback({
+                        "status": true,
+                        "data": respone
+                    });
+                }).catch(error => {
+                    responseCallback({
+                        "status": false,
+                        "message": JSON.stringify(error)
+                    });
+                });
+            });
+
+     bridge.registerHandler("sendTRX", function (data, responseCallback) {
+                const app = async () => {
+                    let action = data['action'];
+                    let privateKey = data['privateKey'];
+                    let trx = await tronWeb.transactionBuilder.sendTrx(action['to'],
+                        action['amount'], action['from'])
+                    let sign = await tronWeb.trx.sign(trx, privateKey)
+                    let transaction = await tronWeb.trx.sendRawTransaction(
+                        sign)
+                    return transaction
+                };
+                app().then((result) => {
+                    responseCallback({
+                        "status": true,
+                        "data": result
+                    });
+                }).catch((error) => {
+                    responseCallback({
+                        "status": false,
+                        "message": error
+                    });
+                });
+
+            });
+	    
+# For more details, please see ![example](https://github.com/ggbandAdapter/Jsclient/tree/master/app)
