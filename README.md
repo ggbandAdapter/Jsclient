@@ -1,5 +1,5 @@
 # Jsclient
-Android 调用js工具.
+Android and JS interactive tools.
 
 [![Release](https://jitpack.io/v/ggbandAdapter/Jsclient.svg)](https://jitpack.io/#ggbandAdapter/Jsclient)
 [![Platform](https://img.shields.io/badge/platform-android-green.svg)](http://developer.android.com/index.html)
