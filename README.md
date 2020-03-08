@@ -38,7 +38,7 @@ First, create a client that interacts with JS.
    val tronClient = CallJsClient.Builder().context(this).url("file:///android_asset/tron/TronWeb.html").build()
    val trxApi = tronClient.create(TrxApi::class.java)
    
-# --- Android calls JS method.
+### --- Android calls JS method.
 
 Step 1. Writing java interface calling JS method
    
@@ -116,4 +116,5 @@ Step 2. Write JS function for Android to call.
 
             });
 	    
-# For more details, please see ![example](https://github.com/ggbandAdapter/Jsclient/tree/master/app)
+### For more details, please see
+![example](https://github.com/ggbandAdapter/Jsclient/tree/master/app)
