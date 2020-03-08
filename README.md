@@ -116,5 +116,4 @@ Step 2. Write JS function for Android to call.
 
             });
 	    
-### For more details, please see
-![example](https://github.com/ggbandAdapter/Jsclient/tree/master/app)
+--- For more details, please see [example](https://github.com/ggbandAdapter/Jsclient/tree/master/app)
